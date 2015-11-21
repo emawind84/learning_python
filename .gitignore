@@ -54,4 +54,8 @@ docs/_build/
 # PyBuilder
 target/
 
+## -----------------------------
+## DISCO IGNORE LIST HERE
+## -----------------------------
+
 ipython/
