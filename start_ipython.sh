@@ -10,4 +10,5 @@ echo "Starting iPython notebook..."
 cd $SCRIPT_BASE_PATH
 source ipython/bin/activate
 
-ipython notebook >/dev/null 2>&1 &
+#ipython notebook >/dev/null 2>&1 &
+ipython notebook
