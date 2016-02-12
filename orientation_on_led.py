@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from sense_hat import SenseHat
+import sys
 
 sense = SenseHat()
 sense.clear()
@@ -24,29 +25,40 @@ d = [
     }
 ]
 
-i = 0
-while True:
-    axis = d[i % 3]
-    path = axis['path']
-    ratio = len(path) / 360.0
-    
-    orientation = sense.get_orientation()
-    ori = orientation[axis['ori']]
-    print("pitch={pitch}, roll={roll}, yaw={yaw}".format(**orientation))
-    
-    pos = int(ori * ratio)
-    
-    #print( 'ori %s => %s' % (d[i % 2]['ori'], pos) );
-    
-    y = path[pos] // 8
-    x = path[pos] % 8
-    
-    sense.set_pixel(x, y, 255, 255, 255)
-    
-    prev_pos = axis['last_pos']
-    if prev_pos != (x, y):
-        sense.set_pixel(prev_pos[0], prev_pos[1], 0, 0, 0)
+def quit():
+    sense.clear()
+    sys.exit()
+
+def main():
+    try:
+        i = 0
+        while True:
+            axis = d[i % 3]
+            path = axis['path']
+            ratio = len(path) / 360.0
+
+            orientation = sense.get_orientation()
+            ori = orientation[axis['ori']]
+            print("pitch={pitch}, roll={roll}, yaw={yaw}".format(**orientation))
+
+            pos = int(ori * ratio)
+
+            #print( 'ori %s => %s' % (d[i % 2]['ori'], pos) );
+
+            y = path[pos] // 8
+            x = path[pos] % 8
+
+            sense.set_pixel(x, y, 255, 255, 255)
+
+            prev_pos = axis['last_pos']
+            if prev_pos != (x, y):
+                sense.set_pixel(prev_pos[0], prev_pos[1], 0, 0, 0)
+
+            axis['last_pos'] = (x, y)
+
+            i = i + 1
+    except (KeyboardInterrupt, SystemExit):
+        quit()
         
-    axis['last_pos'] = (x, y)
-    
-    i = i + 1
+if __name__ == '__main__':
+    main()

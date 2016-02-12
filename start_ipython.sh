@@ -13,5 +13,5 @@ echo "Starting iPython notebook..."
 
 cd $SCRIPT_BASE_PATH
 
-ipython notebook >/dev/null 2>&1 &
-#ipython notebook
+#ipython notebook >/dev/null 2>&1 &
+ipython notebook
