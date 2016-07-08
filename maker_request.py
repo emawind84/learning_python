@@ -15,7 +15,7 @@ def main():
         return
     if _args.params:
         try:
-            p = json.loads(args.params)
+            p = json.loads(_args.params)
         except:
             print('Parameters not well format. JSON format required.')
             return
