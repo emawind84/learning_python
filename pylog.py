@@ -31,16 +31,17 @@ class PyLog:
     # for manual stream redirection
     # sys.stdout = PyLog()
     
-    def __init__(self, filename='log.log', create_new=False):
+    def __init__(self, filename='log.log', create_new=False, write_freq=10):
         logging.basicConfig(format='%(asctime)s - %(levelname)s: %(message)s', level=logging.INFO)
         self._logger = logging.getLogger(__name__)
         self._logger.setLevel(logging.INFO)
 
         self.FILE_NAME = filename
-        self.WRITE_FREQ = 10
+        self.WRITE_FREQ = write_freq
 
         self.batch_data = []
         
+        # write on file if the application is killed
         atexit.register(self.write_on_file)
         
         if create_new and os.path.isfile(self._get_filename()):
