@@ -11,23 +11,22 @@ _logger.setLevel(logging.INFO)
 def send(event, params=None):
     # https://maker.ifttt.com/trigger/{event}/with/key/nmr2BnBoPJPDkNvfz3bk0
     r = requests.get("https://maker.ifttt.com/trigger/%s/with/key/%s" % (event, _maker_key), data=params)
-    r.text
+    _logger.info(r.text)
     
 def main():
+    params = {}
     if not _args.event:
-        print('Event not defined')
+        _logger.error('Event not defined')
         return
     if _args.params:
         try:
-            p = json.loads(_args.params)
+            params = json.loads(_args.params)
         except:
-            print('Parameters not well format. JSON format required.')
+            _logger.error('Parameters not well format. JSON format required.')
             return
-    send(_args.event, p)
+    send(_args.event, params)
     
-if __name__=='__main__':
-    print sys.argv
-    
+if __name__=='__main__':   
     _parser = argparse.ArgumentParser()
     _parser.add_argument('-e', action='store', dest='event', type=str, help='Event to trigger')
     _parser.add_argument('-p', action='store', dest='params', type=str, help='Parameters to send with the event')
