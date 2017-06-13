@@ -9,11 +9,12 @@ _logger = logging.getLogger(__name__)
 _logger.setLevel(logging.INFO)
 
 def send(event, params=None):
+    '''Trigger a maker event passing the event name and parameters as json object'''
     # https://maker.ifttt.com/trigger/{event}/with/key/nmr2BnBoPJPDkNvfz3bk0
     r = requests.get("https://maker.ifttt.com/trigger/%s/with/key/%s" % (event, _maker_key), data=params)
     _logger.info(r.text)
     
-def main():
+def _main():
     params = {}
     if not _args.event:
         _logger.error('Event not defined')
@@ -39,4 +40,4 @@ if __name__=='__main__':
     _logger.debug("event: %s" % _args.event)
     _logger.debug("params: %s" % _args.params)
     
-    main()
+    _main()
