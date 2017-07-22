@@ -5,11 +5,13 @@ import subprocess, es_data_import
 from datetime import datetime
 
 BACKUP_TEMP_FOLDER='/media/usb2/backup'
-PART_SIZE=67108864
+PART_SIZE=134217728  # 128M need to be power of 2
+#PART_SIZE=16777216
 AWS_VAULT='raspi'
 ES_METADATA_INDEX='aws-vault'
 ES_METADATA_TYPE='archive'
 AWS_PATH='/home/pi/bin/aws'
+REMOVE_CHUNKS=True
 
 ARCHIVE_PREFIX='{}/archive.gz.part_'.format(BACKUP_TEMP_FOLDER)
 _args = {}
@@ -37,17 +39,19 @@ def _complete_request(upload_id, checksum):
                         "--account-id=-",
                         "--checksum=%s" % checksum,
                         "--upload-id=%s" % upload_id,
-                        "--archive-size=%s" % archive_size ])
+                        "--archive-size=%s" % archive_size 
+                        ])
     return out.decode('UTF-8')
 
-def _import_to_es(data, description="", filename="archive"):
+def _import_to_es(data, description="", filename=""):
     now = datetime.now()
     data = json.loads(data)
 
     data.update({ 
-        "description": description, 
+        "description": data.get('ArchiveDescription', description), 
         "filename": filename, 
-        "timestamp": now.strftime('%Y-%m-%dT%H:%M:%S.%f%z') })
+        "timestamp": data.get('CreationDate', now.strftime('%Y-%m-%dT%H:%M:%S.%f%z'))
+    })
     _logger.debug(data)
 
     response = es_data_import.post( ES_METADATA_INDEX, ES_METADATA_TYPE, data )
@@ -61,13 +65,10 @@ def _multi_upload(filename, upload_id):
         parts += 1
         
     sha256_parts = []
-    dd = subprocess.Popen(['dd', 
-          'if=%s' % filename, 
-          'bs=2M']
-         , stdout=subprocess.PIPE )
-    
+    dd = subprocess.Popen(['dd', 'if=%s' % filename, 'bs=2M'], stdout=subprocess.PIPE )
+    #gzip = subprocess.Popen(['gzip', '-9', '-'], stdin=dd.stdout, stdout=subprocess.PIPE)
     out = subprocess.check_output(['split', 
-          '--suffix-length=1', 
+          '--suffix-length=2', 
           '--numeric-suffixes=0', 
           '--bytes=%s' % PART_SIZE, 
           '-', 
@@ -77,8 +78,7 @@ def _multi_upload(filename, upload_id):
     start=0
     end=0
     for i in range(parts):
-        part_filename = ARCHIVE_PREFIX + str(i)
-        start = start * PART_SIZE
+        part_filename = ARCHIVE_PREFIX + ('%02d' % i)
         stats = os.stat(part_filename)
         end = start + stats.st_size - 1
         
@@ -95,7 +95,10 @@ def _multi_upload(filename, upload_id):
               '--upload-id', str(upload_id),
               '--checksum', checksum,
               '--range', 'bytes {}-{}/*'.format(start, end)])
-        start += 1
+        start = start + PART_SIZE
+
+        if REMOVE_CHUNKS:
+            os.remove(part_filename)
 
     complete_checksum = sha256_tree_hash.compute_sha256_tree_hash( sha256_parts )
     return complete_checksum
@@ -111,14 +114,29 @@ def upload(filename, description):
     _logger.debug('ES import response : {}'.format(es_response))
 
     return aws_response
+
+def register_vault_list(filename):
+    stats = os.stat(filename)
+    if stats.st_size > 16777216:
+        raise Exception('File size way too big...')
+    file = open(filename)
+    L = json.load(file)
+    
+    for l in L['ArchiveList']:
+        _import_to_es(json.dumps(l))
+
     
 def _main():
-    upload(_args.file, _args.descr)
+    if _args.register:
+        register_vault_list(_args.file)
+    else:
+        upload(_args.file, _args.descr)
 
 if __name__=='__main__':   
     _parser = argparse.ArgumentParser()
     _parser.add_argument('-f', action='store', dest='file', type=str, help='File to upload')
     _parser.add_argument('-m', action='store', dest='descr', type=str, help='Description')
+    _parser.add_argument('-r', '--register', action='store_true', dest='register', help='Register vault list to ES')
     _parser.add_argument('-d', '--debug', action='store_true', dest='debug', help='More logging on console')
     _args = _parser.parse_args()
     
