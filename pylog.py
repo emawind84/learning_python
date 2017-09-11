@@ -76,7 +76,7 @@ class PyLog:
             #print("Writing log to file...", file=ori_stdout)
             for line in self.batch_data:
                 #print('line: %s' % line, file=ori_stdout)
-                f.write(line + '\n')
+                f.write(line)
             self.batch_data = []
     
     def log_data(self, data):
@@ -90,7 +90,7 @@ class PyLog:
         """Log a plain text message"""
         dt = datetime.now()
         datestr = dt.strftime('%Y-%m-%d %H:%M:%S')
-        self.batch_data.append('[%s] %s' % (datestr, msg))
+        self.batch_data.append('[%s] %s' % (datestr, msg) + '\n' if msg != '\n' else '')
         if len(self.batch_data) >= self.WRITE_FREQ:
             self.write_on_file()
     

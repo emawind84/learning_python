@@ -1,7 +1,11 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
-import json, csv, requests, logging, argparse, sys
-import dateutil.parser
+import json 
+import csv
+import requests
+import logging
+import argparse
+import sys
 
 # ElasticSearch parameters
 ES_HOST = '127.0.0.1'

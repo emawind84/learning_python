@@ -3,9 +3,17 @@
 It includes multipart file upload and basic functionalities to manage the Glacier vault.
 """
 
-import requests, argparse, json, logging, sys, os, sha256_tree_hash, codecs
+import requests
+import argparse
+import json
+import logging
+import sys
+import os
+import sha256_tree_hash
+import codecs
 import subprocess, es_data_import
 from datetime import datetime
+from pylog import PyLog
 
 __author__ = "Emanuele Disco"
 __copyright__ = "Copyright 2017"
@@ -28,8 +36,8 @@ logging.basicConfig(format='%(asctime)s - %(levelname)s: %(message)s')
 _logger = logging.getLogger(__name__)
 _logger.setLevel(logging.INFO)
 
-#output = PyLog(filename=GLACIER_DATA + '/output.log', write_freq=1)
-output = sys.stdout
+output = PyLog(filename='aws_glacier.log', write_freq=1)
+#output = sys.stdout
 
 def _start_request(descr=''):
     out = subprocess.check_output([AWS_PATH, 
@@ -57,7 +65,7 @@ def _complete_request(filename, upload_id, checksum):
     return out.decode('UTF-8')
 
 def _log_to_es(data, description="", filename=""):
-    now = datetime.now()
+    now = datetime.utcnow()
     data = json.loads(data)
 
     data.update({ 
@@ -78,14 +86,14 @@ def _multi_upload(filename, upload_id):
         parts += 1
         
     sha256_parts = []
-    dd = subprocess.Popen(['dd', 'if=%s' % filename, 'bs=2M'], stdout=subprocess.PIPE )
+    dd = subprocess.Popen(['dd', 'if=%s' % filename, 'bs=2M'], stdout=subprocess.PIPE)
     #gzip = subprocess.Popen(['gzip', '-1', '-'], stdin=dd.stdout, stdout=subprocess.PIPE)
-    out = subprocess.check_output(['split', 
-                                   '--suffix-length=2', 
-                                   '--numeric-suffixes=0', 
-                                   '--bytes=%s' % PART_SIZE, '-', ARCHIVE_PREFIX
-                                  ], 
-                                  stdin = dd.stdout )
+    subprocess.Popen(['split', 
+                      '--suffix-length=2', 
+                      '--numeric-suffixes=0', 
+                      '--bytes=%s' % PART_SIZE, '-', ARCHIVE_PREFIX
+                     ], 
+                     stdin=dd.stdout )
     
     start=0
     end=0

@@ -16,6 +16,9 @@ def get_chunks_sha256_hashes(filename, block_size=1048576):
     return chunks
 
 def compute_sha256_tree_hash(chunks):
+    if len(chunks) == 0:
+        return
+    
     prev_lvl_hashes = chunks
 
     while len(prev_lvl_hashes) > 1:
