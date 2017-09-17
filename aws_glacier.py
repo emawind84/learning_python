@@ -11,7 +11,8 @@ import sys
 import os
 import sha256_tree_hash
 import codecs
-import subprocess, es_data_import
+import subprocess
+import es_data_import
 from datetime import datetime
 from pylog import PyLog
 

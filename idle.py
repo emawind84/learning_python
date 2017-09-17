@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 #@ Start the editor with:
 #  $ ./idle.py -e (editor + shell)
