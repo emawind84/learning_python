@@ -82,7 +82,7 @@ class PyLog:
     def log_data(self, data):
         """Log a list of data with comma as divisor"""
         out = ','.join(str(value) for value in data)
-        self.batch_data.append(out)
+        self.batch_data.append(out + '\n')
         if len(self.batch_data) >= self.WRITE_FREQ:
             self.write_on_file()
 

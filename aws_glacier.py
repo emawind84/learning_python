@@ -23,20 +23,20 @@ __version__ = "1.0.0"
 __email__ = "emanuele.disco@gmail.com"
 __status__ = "Production"
 
-BACKUP_TEMP_FOLDER = os.getenv('BACKUP_TEMP_FOLDER', '/media/usb2/backup')
+BACKUP_TEMP_FOLDER = os.getenv('BACKUP_TEMP_FOLDER', '/media/usb2/tmp')
 PART_SIZE = 134217728  # 128M need to be power of 2
 AWS_VAULT = os.getenv('AWS_VAULT', 'raspi')
 ES_METADATA_INDEX = os.getenv('ES_INDEX', 'aws-vault')
 ES_METADATA_TYPE = os.getenv('ES_TYPE', 'archive')
-AWS_PATH = '/home/pi/bin/aws'
+AWS_PATH = os.getenv('AWS_PATH', '/home/pi/bin/aws')
 
 _args = {}
 logging.basicConfig(format='%(asctime)s - %(levelname)s: %(message)s')
 _logger = logging.getLogger(__name__)
 _logger.setLevel(logging.INFO)
 
-output = PyLog(filename='aws_glacier.log', write_freq=1)
-#output = sys.stdout
+#output = PyLog(filename='aws_glacier.log', write_freq=1)
+output = sys.stdout
 
 def _start_request(descr=''):
     out = subprocess.check_output([AWS_PATH, 
@@ -44,7 +44,7 @@ def _start_request(descr=''):
                                    "initiate-multipart-upload", 
                                    "--vault-name={}".format(AWS_VAULT), 
                                    "--account-id=-", 
-                                   "--archive-description=\"{}\"".format(descr), 
+                                   "--archive-description={}".format(descr), 
                                    "--part-size={}".format(PART_SIZE) 
                                   ])
     return json.loads(out.decode('UTF-8'))['uploadId']
@@ -194,7 +194,7 @@ def _main():
     if _args.register:
         register_vault_list(_args.file)
     elif _args.file:
-        out = upload(_args.file, _args.descr)
+        out = upload(_args.file, _args.descr or _args.file)
         output.write(out)
     elif _args.delete:
         delete(_args.delete)
@@ -210,7 +210,7 @@ def _main():
 
 if __name__=='__main__':   
     _parser = argparse.ArgumentParser()
-    _parser.add_argument('-f', action='store', dest='file', type=str, help='the file to upload without full path')
+    _parser.add_argument('-f', action='store', dest='file', type=str, help='the file to upload')
     _parser.add_argument('-m', action='store', dest='descr', type=str, help='description to upload')
     _parser.add_argument('-r', '--register', action='store_true', dest='register', help='register vault list to ES')
     _parser.add_argument('-v', '--verbose', action='store_true', dest='debug', help='verbose mode')
