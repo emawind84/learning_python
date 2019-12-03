@@ -26,6 +26,9 @@ def post(index, typez, data):
     _logger.debug(r.text)
     return r
 
+def get(index, typez, query):
+    requests.get("http://%s:%s/%s" % (ES_HOST, ES_PORT, index), data='')
+
 def main():
     if not _args.data:
         _logger.error('Data missing, nothing to index!')

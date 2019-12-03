@@ -125,6 +125,7 @@ def _multi_upload(filename, upload_id):
 
 def upload(filename, description):
     """Upload a single archive given the file fullpath and a description."""
+    description = description.replace('${date}', datetime.utcnow().strftime('%Y-%m-%d'))
     upload_id = _start_request(description)
     _logger.debug('Requested Upload Id: %s', upload_id)
     checksum = _multi_upload(filename, upload_id)
@@ -210,8 +211,8 @@ def _main():
 
 if __name__=='__main__':   
     _parser = argparse.ArgumentParser()
-    _parser.add_argument('-f', action='store', dest='file', type=str, help='the file to upload')
-    _parser.add_argument('-m', action='store', dest='descr', type=str, help='description to upload')
+    _parser.add_argument('-f', '--file', action='store', dest='file', type=str, help='the file to upload')
+    _parser.add_argument('-m', '--description', action='store', dest='descr', type=str, help='description to upload')
     _parser.add_argument('-r', '--register', action='store_true', dest='register', help='register vault list to ES')
     _parser.add_argument('-v', '--verbose', action='store_true', dest='debug', help='verbose mode')
     _parser.add_argument('-d', '--delete', action='store', dest='delete', type=str, help='delete an archive')
