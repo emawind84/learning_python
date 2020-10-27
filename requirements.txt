@@ -1,7 +1,7 @@
 backports.ssl-match-hostname==3.4.0.2
 certifi==2015.4.28
 cffi==1.2.1
-cryptography==1.0.1
+cryptography==3.2
 decorator==4.0.2
 enum34==1.0.4
 feedparser==5.2.1
