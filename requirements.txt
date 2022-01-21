@@ -9,7 +9,7 @@ functools32==3.2.3.post2
 idna==2.0
 ipaddress==1.0.14
 ipykernel==4.0.3
-ipython==4.0.0
+ipython==7.16.3
 ipython-genutils==0.1.0
 ipywidgets==4.0.2
 Jinja2==2.8
